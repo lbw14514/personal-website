@@ -8,3 +8,8 @@ desktop.ini
 .vscode/
 *.suo
 *.user
+
+# 编译产物
+*.exe
+*.pdb
+*.jar

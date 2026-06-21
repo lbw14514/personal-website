@@ -11,7 +11,7 @@
 ├── *.html              # 其他页面（404, dino, guestbook, quiz）
 ├── mc-api/             # Minecraft 服务器状态 API（Flask）
 │   └── app.py
-├── server/             # 后端服务
+├── hakimi-server/      # hakimi 后端服务
 │   ├── cpp/            # C++ hakimi 引擎
 │   ├── node_bridge/    # Node.js 桥接服务
 │   └── starthd2.bat    # 启动脚本
