@@ -1,0 +1,15 @@
+﻿# 系统文件
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# IDE
+.vs/
+.vscode/
+*.suo
+*.user
+
+# 编译产物
+*.exe
+*.pdb
+*.jar

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>小恐龙游戏</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #1e293b;
+      color: #f8fafc;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+    canvas {
+      border: 1px solid #f8fafc;
+      max-width: 100%;
+      height: auto;
+    }
+    #jumpBtn {
+      display: none;
+      margin-top: 20px;
+      padding: 20px 40px;
+      font-size: 2rem;
+      font-weight: bold;
+      background: #f8fafc;
+      color: #1e293b;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 8px 0 #94a3b8;
+      transition: all 0.1s ease;
+    }
+    #jumpBtn:active {
+      transform: translateY(4px);
+      box-shadow: 0 4px 0 #64748b;
+    }
+    @media (max-width: 768px) {
+      #jumpBtn {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="200"></canvas>
+  <button id="jumpBtn">跳跃</button>
+  <p style="text-align: center; color: #f8fafc; margin-top: 10px; font-size: 0.9rem;">
+    按空格键或点击按钮跳跃，避开障碍物！
+  </p>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let dino = { x: 50, y: 150, width: 40, height: 40, dy: 0, jumping: false };
+    let obstacles = [];
+    let score = 0;
+    let gameSpeed = 5;
+
+    function drawDino() {
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = '#94a3b8';
+      obstacles.forEach(obstacle => {
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      });
+    }
+
+    function updateObstacles() {
+      if (Math.random() < 0.02) {
+        obstacles.push({ x: canvas.width, y: 160, width: 20, height: 40 });
+      }
+      obstacles.forEach(obstacle => obstacle.x -= gameSpeed);
+      obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
+    }
+
+    function checkCollision() {
+      for (let obstacle of obstacles) {
+        if (
+          dino.x < obstacle.x + obstacle.width &&
+          dino.x + dino.width > obstacle.x &&
+          dino.y < obstacle.y + obstacle.height &&
+          dino.y + dino.height > obstacle.y
+        ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function jump() {
+      if (!dino.jumping) {
+        dino.dy = -10;
+        dino.jumping = true;
+      }
+    }
+
+    function updateDino() {
+      dino.y += dino.dy;
+      if (dino.jumping) {
+        dino.dy += 0.5;
+      }
+      if (dino.y >= 150) {
+        dino.y = 150;
+        dino.jumping = false;
+      }
+    }
+
+    function drawScore() {
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '20px Arial';
+      ctx.fillText(`得分: ${score}`, 10, 20);
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawDino();
+      drawObstacles();
+      drawScore();
+      updateDino();
+      updateObstacles();
+
+      if (checkCollision()) {
+        alert(`游戏结束！得分: ${score}`);
+        document.location.reload();
+        return;
+      }
+
+      score++;
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        jump();
+      }
+    });
+
+    const jumpBtn = document.getElementById('jumpBtn');
+    jumpBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      jump();
+    });
+    jumpBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      jump();
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>

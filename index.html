@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人简介</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .visitor-counter {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 1rem;
+      color: #be185d;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.45);
+      padding: 10px 18px;
+      border-radius: 14px;
+      display: inline-block;
+      backdrop-filter: blur(8px);
+    }
+    .music-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(214, 51, 126, 0.35);
+      backdrop-filter: blur(12px);
+      border: 2px solid rgba(214, 51, 126, 0.55);
+      box-shadow: 0 0 24px rgba(214, 51, 126, 0.35);
+      color: #be185d;
+      font-size: 24px;
+      line-height: 48px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      user-select: none;
+    }
+    .music-toggle:hover {
+      background: rgba(214, 51, 126, 0.65);
+      box-shadow: 0 0 36px rgba(214, 51, 126, 0.6);
+      transform: scale(1.12);
+    }
+    .music-toggle.playing {
+      background: rgba(214, 51, 126, 0.7);
+      box-shadow: 0 0 36px rgba(214, 51, 126, 0.7);
+    }
+    .music-tip {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+      backdrop-filter: blur(14px);
+      border: 2px solid #ec4899;
+      border-radius: 20px;
+      padding: 16px 32px;
+      color: #9d174d;
+      font-weight: 700;
+      font-size: 1.2rem;
+      box-shadow: 0 12px 32px rgba(236, 72, 153, 0.45);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: fadeInDown 0.5s ease;
+      pointer-events: none;
+    }
+    .music-tip::after {
+      content: "⬇️";
+      font-size: 1.6rem;
+      animation: bounce 0.8s infinite alternate;
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-24px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(8px); }
+    }
+
+    .easter-egg-tip {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(214, 51, 126, 0.25);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(214, 51, 126, 0.5);
+      color: #be185d;
+      font-size: 22px;
+      line-height: 44px;
+      text-align: center;
+      cursor: pointer;
+      z-index: 10000;
+      transition: all 0.3s ease;
+      animation: glowPulse 1.8s infinite alternate;
+    }
+    .easter-egg-tip:hover {
+      background: rgba(214, 51, 126, 0.55);
+      box-shadow: 0 0 28px rgba(214, 51, 126, 0.5);
+      width: auto;
+      border-radius: 22px;
+      padding: 0 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .easter-egg-tip:hover::before {
+      content: "输入 ↑↑↓↓←→←→BA 试试看？";
+    }
+    .easter-egg-tip:hover span {
+      display: none;
+    }
+    @keyframes glowPulse {
+      from { box-shadow: 0 0 8px rgba(214, 51, 126, 0.3); }
+      to { box-shadow: 0 0 22px rgba(214, 51, 126, 0.7); }
+    }
+
+    /* 移动端弹窗 */
+    .mobile-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 100000;
+      justify-content: center;
+      align-items: center;
+    }
+    .mobile-modal-content {
+      background: #fff;
+      border-radius: 18px;
+      padding: 28px 24px;
+      max-width: 320px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      color: #1f2937;
+    }
+    .mobile-modal-content p {
+      margin: 0 0 20px;
+      font-size: 1rem;
+    }
+    .mobile-modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .mobile-modal-btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .mobile-modal-btn.primary {
+      background: #be185d;
+      color: #fff;
+    }
+    .mobile-modal-btn.secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    @media (max-width: 768px) {
+      .mobile-modal.show {
+        display: flex;
+      }
+    }
+    @media (prefers-color-scheme: dark) {
+      .mobile-modal-content {
+        background: #1e293b;
+        color: #f8fafc;
+      }
+      .mobile-modal-btn.secondary {
+        background: #334155;
+        color: #e2e8f0;
+      }
+    }
+
+    /* 功能链接反差色 */
+    .func-link {
+      font-weight: 500;
+      text-decoration: none;
+      border-bottom: 1px dashed currentColor;
+      transition: opacity 0.2s;
+    }
+    .func-link:hover { opacity: 0.8; }
+    .func-link-dino { color: #2563eb; }
+    .func-link-quiz { color: #d946ef; }
+    .func-link-guestbook { color: #f97316; }
+    @media (prefers-color-scheme: dark) {
+      .func-link-dino { color: #60a5fa; }
+      .func-link-quiz { color: #f0abfc; }
+      .func-link-guestbook { color: #fdba74; }
+    }
+    .force-dark .func-link-dino { color: #60a5fa; }
+    .force-dark .func-link-quiz { color: #f0abfc; }
+    .force-dark .func-link-guestbook { color: #fdba74; }
+
+    .force-dark {
+      --bg: #0f172a;
+      --bg-overlay-start: rgba(15, 23, 42, 0.92);
+      --bg-overlay-end: rgba(15, 23, 42, 0.88);
+      --surface: rgba(30, 41, 59, 0.85);
+      --surface-border: rgba(148, 163, 184, 0.2);
+      --container-bg: rgba(30, 41, 59, 0.85);
+      --header-bg: linear-gradient(135deg, #831843, #4c1d95);
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --accent-card-bg: rgba(190, 24, 93, 0.2);
+      --accent-card-border: rgba(190, 24, 93, 0.4);
+      --accent-text: #f8c8e6;
+      --shadow: rgba(236, 72, 153, 0.3);
+      --link: #f472b6;
+      --accent: #f472b6;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .music-tip {
+        background: linear-gradient(135deg, #831843, #9d174d);
+        border-color: #f472b6;
+        color: #fce7f3;
+        box-shadow: 0 12px 32px rgba(236, 72, 153, 0.55);
+      }
+      .mobile-modal-content {
+        background: #1e293b;
+        color: #f8fafc;
+      }
+      .mobile-modal-btn.secondary {
+        background: #334155;
+        color: #e2e8f0;
+      }
+    }
+        .clock-desktop { display: block; }
+    .clock-mobile { display: none; }
+    @media (max-width: 768px) {
+      .clock-desktop { display: none; }
+      .clock-mobile { display: block; }
+    }
+        .card.clock-expand .card-content {
+      max-height: 1000px !important;
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+      margin-top: 18px !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-modal" id="mobileModal">
+    <div class="mobile-modal-content">
+      <p>📱 建议用电脑访问，体验更佳哦～</p>
+      <div class="mobile-modal-buttons">
+        <button class="mobile-modal-btn primary" onclick="document.getElementById('mobileModal').classList.remove('show')">继续访问</button>
+        <button class="mobile-modal-btn secondary" onclick="dismissMobile()">不再提示</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      if (window.innerWidth <= 768) {
+        if (!localStorage.getItem('mobile-hint-dismissed')) {
+          document.getElementById('mobileModal').classList.add('show');
+        }
+      }
+    })();
+    function dismissMobile() {
+      localStorage.setItem('mobile-hint-dismissed', '1');
+      document.getElementById('mobileModal').classList.remove('show');
+    }
+  </script>
+
+  <div class="container">
+    <header>
+      <h1>你好，我是「雾雨卢本伟」</h1>
+      <p class="subtitle">mc大蛇</p>
+    </header>
+
+    <section class="card accent-card" style="border-color: #f472b6; background: linear-gradient(135deg, rgba(248, 200, 230, 0.25), rgba(190, 24, 93, 0.15));">
+      <h2 class="card-title" style="color: #be185d;">🌸 窝是东方Project 爱好者</h2>
+      <div class="card-content">
+        <p style="font-size: 1.05rem;">
+          我是<strong>东方Project</strong>的忠实爱好者！🎵<br>
+          我这人特爱听车万音乐，还喜欢雾雨摸你傻（所以就「偷」了她的名字）<br>
+          （符合人设 不过读书人的事怎么能叫偷呢？）
+        </p>
+      </div>
+    </section>
+
+    <section class="card accent-card">
+      <h2 class="card-title">卢本伟介绍</h2>
+      <div class="card-content">
+        <p>卢本伟原名卢本伟，早年以卢本伟身份出道，后转型成为知名卢本伟主播</p>
+        <p>在直播和电竞内容之外，他也因为一些争议事件受到广泛关注，卢本伟没有开挂，对吧？</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">关于我</h2>
+      <div class="card-content">
+        <p>我是一名热爱开发的mc大王，喜欢使用「垃圾编程语言」构建「垃圾应用」。</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">技能</h2>
+      <div class="card-content">
+        <ul>
+          <li>c / c嘎嘎 / JavaScript</li>
+          <li>HTML / CSS / 还有一堆一知半解的（</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">项目亮点</h2>
+      <div class="card-content">
+        <p>我曾没有参与多个项目，希望做出屎中屎</p>
+      </div>
+    </section>
+
+<section class="card" id="hakimi-card">
+  <h2 class="card-title">hakimi人工不智能对话程序</h2>
+  <div class="card-content">
+    <div id="hakimi-console"></div>
+  </div>
+</section>
+
+<section class="card" id="function-graph-card">
+  <h2 class="card-title">📈 函数图像计算器</h2>
+  <div class="card-content">
+    <div id="function-graph-container"></div>
+  </div>
+</section>
+
+  <section class="card">
+    <h2 class="card-title">📁 文件下载</h2>
+    <div class="card-content" id="downloads-container"></div>
+  </section>
+
+  <section class="card" id="potato-card">
+  <h2 class="card-title">我的土豆</h2>
+  <div class="card-content">
+    <p>欢迎找我玩mc 🥔</p>
+    <div id="mc-status-container" style="margin:12px 0; font-weight:500;"></div>
+  </div>
+</section>
+
+    <section class="card contact-card">
+      <h2 class="card-title">联系方式</h2>
+      <div class="card-content">
+        <p>邮箱：<span style="color: #be185d;">lbw6666@lbwkg.top</span></p>
+        <p>qq：<span style="color: #be185d;">3178644407</span></p>
+      </div>
+    </section>
+    
+    <section class="card">
+      <h2 class="card-title">MC 服务器状态检测</h2>
+      <div class="card-content" id="mc-check-tool"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">推荐网站</h2>
+      <div class="card-content">
+        <p><a href="https://thwiki.cc" target="_blank" rel="noopener noreferrer">📚 THB Wiki</a></p>
+        <p><a href="https://mcmod.cn" target="_blank" rel="noopener noreferrer">🔧 MC百科</a></p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">友情链接</h2>
+      <div class="card-content">
+        <p><a href="http://web.cirnine.com" target="_blank" rel="noopener noreferrer">🌸 河城工坊</a></p>
+      </div>
+    </section>
+
+       
+      <section class="card clock-desktop clock-expand">
+      <h2 class="card-title">区域时间</h2>
+      <div class="card-content">
+      <div id="clock-desktop-content" style="text-align:center; font-size:1.1rem; color:var(--text-primary);">加载中...</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>小游戏</h2>
+      <p><a href="dino.html" target="_blank" class="func-link func-link-dino">点击这里玩小恐龙游戏</a></p>
+    </section>
+
+    <section>
+      <h2>测试</h2>
+      <p><a href="quiz.html" target="_blank" class="func-link func-link-quiz">点击这里进行中学生计算机考试选择题测试</a></p>
+    </section>
+
+    <section>
+      <h2>其他功能</h2>
+      <p><a href="guestbook.html" target="_blank" class="func-link func-link-guestbook">📝 留言板</a></p>
+    </section>
+
+    <div style="text-align: center;">
+      <div class="visitor-counter" id="visitor-count"></div>
+    </div>
+
+      <section class="card clock-mobile clock-expand">
+      <h2 class="card-title">区域时间</h2>
+      <div class="card-content">
+      <div id="clock-mobile-content" style="text-align:center; font-size:1rem; color:var(--text-primary);">加载中...</div>
+      </div>
+    </section>
+
+    <div style="text-align:center; margin-top:20px;">
+      <div id="gif-area" style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px;"></div>
+    </div>
+
+    <div id="device-info" style="text-align:center; margin:20px 0; font-size:0.9rem; color:var(--text-secondary);"></div>
+
+    <div style="text-align:center; margin-top:12px; font-size:0.9rem; color:var(--text-secondary); opacity:0.7;">
+      Powered by wuyulbw
+    </div>
+  </div>
+
+  <audio id="bgm" src="music.mp3" autoplay loop></audio>
+  <div class="music-toggle" id="musicToggle" title="播放/暂停">♪</div>
+  <div class="easter-egg-tip">🎮</div>
+
+<script src="webrtc-ip.js"></script>
+<script src="effects-control.js"></script>
+<script src="konami.js"></script>
+<script src="snow.js"></script>
+<script src="click-effect.js"></script>
+<script src="back-to-top.js"></script>
+<script src="youmu.js"></script>
+<script src="right-gif.js"></script>
+<script src="bg-rotate.js"></script>
+<script src="progress-bar.js"></script>
+<script src="dark-mode.js"></script>
+<script src="mc-status.js"></script>
+<script src="mc-check-tool.js"></script>
+<script src="main.js"></script>
+<script src="device-info.js"></script>
+<script src="clock.js"></script>
+<script src="footer-gifs.js"></script>
+<script src="downloads.js"></script>
+<script src="hakimi-cpp.js"></script>
+<script src="function-graph.js"></script>
+</body>
+</html>
